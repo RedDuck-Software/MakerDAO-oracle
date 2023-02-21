@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.5.10;
 
 import "ds-test/test.sol";
@@ -11,6 +12,7 @@ interface Hevm {
 contract OSMTest is DSTest {
     Hevm hevm;
 
+    address aggregator = 0x214eD9Da11D2fbe465a6fc601a91E62EbEc1a0D6;
     DSValue feed;
     OSM osm;
     address bud;
@@ -18,7 +20,7 @@ contract OSMTest is DSTest {
     function setUp() public {
         feed = new DSValue();                                   //create new feed
         feed.poke(bytes32(uint(100 ether)));                    //set feed to 100
-        osm = new OSM(address(feed));                           //create new osm linked to feed
+        osm = new OSM(address(feed), aggregator);                           //create new osm linked to feed
         hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);//get hevm instance
         hevm.warp(uint(osm.hop()));                             //warp 1 hop
         osm.poke();                                             //set new next osm value
@@ -105,7 +107,6 @@ contract OSMTest is DSTest {
     function testWhitelistPeek() public {
         osm.kiss(bud);                                //whitelist caller
         osm.peek();                                             //pull current osm value
-
     }
 
     function testKiss() public {

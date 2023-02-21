@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /// osm.sol
 
 // Copyright (C) 2018-2020 Maker Ecosystem Growth Holdings, INC.
@@ -18,6 +19,7 @@
 pragma solidity >=0.5.10;
 
 import "ds-value/value.sol";
+import "./AggregatorV3Interface.sol";
 
 contract LibNote {
     event LogNote(
@@ -69,6 +71,7 @@ contract OSM is LibNote {
         require(z >= x);
     }
 
+    AggregatorV3Interface public priceFeed;
     address public src;
     uint16  constant ONE_HOUR = uint16(3600);
     uint16  public hop = ONE_HOUR;
@@ -89,9 +92,10 @@ contract OSM is LibNote {
 
     event LogValue(bytes32 val);
 
-    constructor (address src_) public {
+    constructor (address src_, address _aggregatorAddress) public {
         wards[msg.sender] = 1;
         src = src_;
+        priceFeed = AggregatorV3Interface(_aggregatorAddress);
     }
 
     function stop() external note auth {
@@ -140,16 +144,31 @@ contract OSM is LibNote {
     }
 
     function peek() external view toll returns (bytes32,bool) {
-        return (bytes32(uint(cur.val)), cur.has == 1);
+        return _getPrice();
     }
 
     function peep() external view toll returns (bytes32,bool) {
-        return (bytes32(uint(nxt.val)), nxt.has == 1);
+        return _getPrice();
     }
 
     function read() external view toll returns (bytes32) {
-        require(cur.has == 1, "OSM/no-current-value");
-        return (bytes32(uint(cur.val)));
+        (bytes32 val, bool suc ) = _getPrice();
+        require(suc, "OSM/no-current-value");
+        return val;
+    }
+
+    function _getPrice() private view returns(bytes32, bool){
+        (
+            /*uint80 roundID*/,
+            int price,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeed.latestRoundData();
+        if (price < 0) {
+            return (0, false);
+        }
+        return (bytes32(uint(price) * (10**10)), true);
     }
 
 
