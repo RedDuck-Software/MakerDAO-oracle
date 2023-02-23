@@ -12,7 +12,8 @@ interface Hevm {
 contract OSMTest is DSTest {
     Hevm hevm;
 
-    address aggregator = 0x7b219F57a8e9C7303204Af681e9fA69d17ef626f;
+    address assetAggregator = 0xA39434A63A52E749F02807ae27335515BA4b07F7;
+    address goldAggregator = 0x7b219F57a8e9C7303204Af681e9fA69d17ef626f;
     DSValue feed;
     OSM osm;
     address bud;
@@ -20,7 +21,7 @@ contract OSMTest is DSTest {
     function setUp() public {
         feed = new DSValue();                                   //create new feed
         feed.poke(bytes32(uint(100 ether)));                    //set feed to 100
-        osm = new OSM(address(feed), aggregator);                           //create new osm linked to feed
+        osm = new OSM(address(feed), goldAggregator, assetAggregator);                           //create new osm linked to feed
         hevm = Hevm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);//get hevm instance
         hevm.warp(uint(osm.hop()));                             //warp 1 hop
         osm.poke();                                             //set new next osm value
@@ -66,7 +67,8 @@ contract OSMTest is DSTest {
         hevm.warp(uint(osm.hop() * 2));                         //warp 2 hops
         osm.poke();                                             //set new current and next osm value
         osm.kiss(bud);                                          //whitelist caller
-        (bytes32 val, bool has) = osm.peek();                   //pull current osm value                      //verify current osm value is 100
+        (bytes32 val, bool has) = osm.peek();  
+        // assertEq(uint(val), 100 ether);                 //pull current osm value                      //verify current osm value is 100
         assertTrue(has);                                        //verify current osm value is valid
         (val, has) = osm.peep();                                //pull next osm value                        //verify next osm value is 101
         assertTrue(has);                                        //verify next osm value is valid

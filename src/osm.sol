@@ -71,11 +71,17 @@ contract OSM is LibNote {
         require(z >= x);
     }
 
-    AggregatorV3Interface public priceFeed;
+    AggregatorV3Interface public assetFeed;
+    AggregatorV3Interface public xauFeed;
     address public src;
     uint16  constant ONE_HOUR = uint16(3600);
     uint16  public hop = ONE_HOUR;
     uint64  public zzz;
+
+    struct Price {
+        uint256 price;
+        uint256 decimal;
+    }
 
     struct Feed {
         uint128 val;
@@ -92,10 +98,11 @@ contract OSM is LibNote {
 
     event LogValue(bytes32 val);
 
-    constructor (address src_, address _aggregatorAddress) public {
+    constructor (address src_, address _xauUsdAggregator, address _assetUsdAggregator) public {
         wards[msg.sender] = 1;
         src = src_;
-        priceFeed = AggregatorV3Interface(_aggregatorAddress);
+        assetFeed = AggregatorV3Interface(_assetUsdAggregator);
+        xauFeed = AggregatorV3Interface(_xauUsdAggregator);
     }
 
     function stop() external note auth {
@@ -158,20 +165,38 @@ contract OSM is LibNote {
     }
 
     function _getPrice() private view returns(bytes32, bool){
+        uint256 assetDecimal = assetFeed.decimals();
+        uint256 xauDecimal = xauFeed.decimals();
         (
             /*uint80 roundID*/,
-            int price,
+            int assetPrice,
             /*uint startedAt*/,
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
-        ) = priceFeed.latestRoundData();
+        ) = assetFeed.latestRoundData();
+        (
+            /*uint80 roundID*/,
+            int xauPrice,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = xauFeed.latestRoundData();
+
+        uint256 price = _conversion(
+            Price(uint256(xauPrice), xauDecimal),
+            Price(uint256(assetPrice), assetDecimal)
+        );
+
         if (price < 0) {
             return (0, false);
         }
-        return (bytes32(uint(price)), true);
+        return (bytes32(price), true);
     }
 
-
+    function _conversion(Price memory _goldPrice, Price memory _assetPrice) private pure returns(uint256) {
+        uint256 difAssetDec = 18 - _assetPrice.decimal;
+        return _assetPrice.price * (10 ** _goldPrice.decimal) * (10 ** difAssetDec) / _goldPrice.price; 
+    }
 
     function kiss(address a) external note auth {
         require(a != address(0), "OSM/no-contract-0");
