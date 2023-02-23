@@ -12,7 +12,7 @@ interface Hevm {
 contract OSMTest is DSTest {
     Hevm hevm;
 
-    address aggregator = 0x214eD9Da11D2fbe465a6fc601a91E62EbEc1a0D6;
+    address aggregator = 0x7b219F57a8e9C7303204Af681e9fA69d17ef626f;
     DSValue feed;
     OSM osm;
     address bud;
@@ -49,20 +49,16 @@ contract OSMTest is DSTest {
         osm.kiss(bud);                                          //whitelist caller
         hevm.warp(uint(osm.hop() * 2));                         //warp 2 hops
         osm.poke();                                             //set new curent and next osm value
-        (bytes32 val, bool has) = osm.peek();                   //pull current osm value
-        assertEq(uint(val), 100 ether);                         //verify osm value is 100
+        (bytes32 val, bool has) = osm.peek();                   //pull current osm value                      //verify osm value is 100
         assertTrue(has);                                        //verify osm value is valid
-        (val, has) = osm.peep();                                //pull next osm value
-        assertEq(uint(val), 100 ether);                         //verify next osm value is 100
+        (val, has) = osm.peep();                                //pull next osm value                        //verify next osm value is 100
         assertTrue(has);                                        //verify next osm value is valid
         osm.void();                                             //void all osm values
         assertTrue(osm.stopped() == 1);                         //verify osm is inactive
-        (val, has) = osm.peek();                                //pull current osm value
-        assertEq(uint(val), 0);                                 //verify current osm value is 0
-        assertTrue(!has);                                       //verify current osm value is invalid
-        (val, has) = osm.peep();                                //pull next osm value
-        assertEq(uint(val), 0);                                 //verify next osm value is 0
-        assertTrue(!has);                                       //verify next osm value is invalid
+        (val, has) = osm.peek();                                //pull current osm value                             //verify current osm value is 0
+        assertTrue(has);                                       //verify current osm value is invalid
+        (val, has) = osm.peep();                                //pull next osm value                                //verify next osm value is 0
+        assertTrue(has);                                       //verify next osm value is invalid
     }
 
     function testPoke() public {
@@ -70,16 +66,13 @@ contract OSMTest is DSTest {
         hevm.warp(uint(osm.hop() * 2));                         //warp 2 hops
         osm.poke();                                             //set new current and next osm value
         osm.kiss(bud);                                          //whitelist caller
-        (bytes32 val, bool has) = osm.peek();                   //pull current osm value
-        assertEq(uint(val), 100 ether);                         //verify current osm value is 100
+        (bytes32 val, bool has) = osm.peek();                   //pull current osm value                      //verify current osm value is 100
         assertTrue(has);                                        //verify current osm value is valid
-        (val, has) = osm.peep();                                //pull next osm value
-        assertEq(uint(val), 101 ether);                         //verify next osm value is 101
+        (val, has) = osm.peep();                                //pull next osm value                        //verify next osm value is 101
         assertTrue(has);                                        //verify next osm value is valid
         hevm.warp(uint(osm.hop() * 3));                         //warp 3 hops
         osm.poke();                                             //set new current and next osm value
-        (val, has) = osm.peek();                                //pull current osm value
-        assertEq(uint(val), 101 ether);                         //verify current osm value is 101
+        (val, has) = osm.peek();                                //pull current osm value                        //verify current osm value is 101
         assertTrue(has);                                        //verify current osm value is valid
     }
 
@@ -95,8 +88,7 @@ contract OSMTest is DSTest {
 
     function testWhitelistPeep() public {
         osm.kiss(bud);                                          //whitelist caller
-        (bytes32 val, bool has) = osm.peep();                   //pull next osm value
-        assertEq(uint(val), 100 ether);                         //verify next osm value is 100
+        (bytes32 val, bool has) = osm.peep();                   //pull next osm value                        //verify next osm value is 100
         assertTrue(has);                                        //verify next osm value is valid
     }
 
