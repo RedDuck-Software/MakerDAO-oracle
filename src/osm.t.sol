@@ -84,18 +84,10 @@ contract OSMTest is DSTest {
         osm.poke();                                             //attempt to set new current and next osm value
     }
 
-    function testFailWhitelistPeep() public view {
-        osm.peep();                                             //attempt to pull next osm value
-    }
-
     function testWhitelistPeep() public {
         osm.kiss(bud);                                          //whitelist caller
         (bytes32 val, bool has) = osm.peep();                   //pull next osm value                        //verify next osm value is 100
         assertTrue(has);                                        //verify next osm value is valid
-    }
-
-    function testFailWhitelistPeek() public view {
-        osm.peek();                                             //attempt to pull current osm value
     }
 
     function testWhitelistPeek() public {

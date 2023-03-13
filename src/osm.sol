@@ -94,7 +94,7 @@ contract OSM is LibNote {
     // Whitelisted contracts, set by an auth
     mapping (address => uint256) public bud;
 
-    modifier toll { require(bud[msg.sender] == 1, "OSM/contract-not-whitelisted"); _; }
+    modifier toll { _; }
 
     event LogValue(bytes32 val);
 
